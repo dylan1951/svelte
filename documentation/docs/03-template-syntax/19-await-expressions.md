@@ -52,6 +52,25 @@ When an `await` expression depends on a particular piece of state, changes to th
 
 — instead, the text will update to `2 + 2 = 4` when `add(a, b)` resolves.
 
+Changes are synchronized to reflect in the UI only after the completion of all `await` expressions that depend on _any_ of the updated states. In the following [example](/playground/untitled#H4sIAAAAAAAAE21QQW6EMAz8ihX1AKtV2VbqhQWk_qCH3koPWdZIkYJJEweKEJ_qE_qyJsCqUlXlYs844xnPgmSHIhfiKFql0Yn8bRY8mYhFIOD7xLMx925AzRG7SIf_4U1PjMRBRhSuscpwVVPNGhkGqT1CCXeOJWPykJ5vTNOb6S8RKOkmaqD11LDqCdyHlxaTIYU5soEfpWIgHOHF9p1ymCRtCmUFDvlVddh7TtojPJ1OaXqGLANpWbWqUVLDFbWcNhmL7C3BAIcDPK6elpqK7Nc9FYqMZ4hXKWtBvrugrQVcFF3zNVU5J-vitTlC9HjrQq493rBsYqaaV2b5_groVq-7lyIz1TYQv-z8lnIPH_F0n9teuDnjJ4ucbZB8D51UegzORN5K7XD5Aff2z3XiAQAA), although `value` has no dependent `await` expressions, the update is not reflected in the UI until the `await` expression that is dependent on `copy` finishes.
+
+```svelte
+<script>
+	let value = $state(1);
+	let copy = $state(1);
+
+	async function square(v) {
+		await new Promise((f) => setTimeout(f, 500)); // artificial delay
+		return v ** 2;
+	}
+</script>
+
+<input type="number" bind:value={() => value, (v) => value = copy = v}>
+
+<p>{value}² = {value ** 2}</p>
+<p>{copy}² = {await square(copy)}</p>
+```
+
 Updates can overlap — a fast update will be reflected in the UI while an earlier slow update is still ongoing.
 
 ## Concurrency
